@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JoyTrack Perú — MVP</title>
+<style>
+  /* ── RESET & BASE ─────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --gold:    #C9A84C;
+    --gold-dk: #A07830;
+    --dark:    #1A1A2E;
+    --dark2:   #16213E;
+    --panel:   #0F3460;
+    --accent:  #E94560;
+    --green:   #2ECC71;
+    --orange:  #E67E22;
+    --blue:    #3498DB;
+    --text:    #ECF0F1;
+    --muted:   #95A5A6;
+    --border:  rgba(201,168,76,0.25);
+    --radius:  10px;
+  }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── NAV ──────────────────────────────────── */
+  nav {
+    background: var(--dark2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-gem { font-size: 22px; }
+  .logo-text { font-size: 18px; font-weight: 700; color: var(--gold); letter-spacing: 1px; }
+  .logo-sub { font-size: 11px; color: var(--muted); }
+  .nav-tabs { display: flex; gap: 4px; }
+  .nav-tab {
+    padding: 6px 16px; border-radius: 6px; border: none;
+    background: transparent; color: var(--muted);
+    cursor: pointer; font-size: 13px; transition: all .2s;
+  }
+  .nav-tab.active, .nav-tab:hover { background: var(--panel); color: var(--gold); }
+  .nav-tab.active { font-weight: 600; }
+
+  /* ── LAYOUT ───────────────────────────────── */
+  .page { display: none; padding: 24px; max-width: 960px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* ── CARDS ────────────────────────────────── */
+  .card {
+    background: var(--dark2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 13px; font-weight: 600;
+    color: var(--gold); text-transform: uppercase;
+    letter-spacing: .5px; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* ── FORM ─────────────────────────────────── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1/-1; }
+  label { font-size: 12px; color: var(--muted); font-weight: 500; }
+  input, select, textarea {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 9px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .2s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--gold); }
+  select option { background: var(--dark2); }
+  textarea { resize: vertical; min-height: 70px; }
+  .btn {
+    padding: 10px 22px; border-radius: 6px; border: none;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all .2s; font-family: inherit;
+  }
+  .btn-primary { background: var(--gold); color: var(--dark); }
+  .btn-primary:hover { background: var(--gold-dk); }
+  .btn-danger { background: var(--accent); color: #fff; }
+  .btn-danger:hover { opacity: .85; }
+  .btn-sm { padding: 5px 12px; font-size: 11px; }
+  .btn-outline {
+    background: transparent; color: var(--gold);
+    border: 1px solid var(--gold);
+  }
+  .btn-outline:hover { background: var(--gold); color: var(--dark); }
+
+  /* ── BADGES ───────────────────────────────── */
+  .badge {
+    display: inline-block; padding: 2px 9px;
+    border-radius: 99px; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .3px;
+  }
+  .b-pending  { background: #F39C12; color: #fff; }
+  .b-review   { background: #3498DB; color: #fff; }
+  .b-approved { background: #27AE60; color: #fff; }
+  .b-rejected { background: #E74C3C; color: #fff; }
+  .b-legal    { background: #2ECC71; color: #1A1A2E; }
+  .b-illegal  { background: #E74C3C; color: #fff; }
+
+  /* ── TABLE ────────────────────────────────── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th {
+    padding: 9px 12px; text-align: left;
+    background: var(--panel); color: var(--gold);
+    font-size: 11px; font-weight: 600; letter-spacing: .3px;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,.05);
+    color: var(--text);
+  }
+  tr:hover td { background: rgba(201,168,76,.05); }
+  .no-data { text-align: center; color: var(--muted); padding: 32px; font-size: 13px; }
+
+  /* ── STATS ────────────────────────────────── */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .stat-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px; text-align: center;
+  }
+  .stat-num { font-size: 28px; font-weight: 700; color: var(--gold); }
+  .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* ── TIMELINE ─────────────────────────────── */
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before {
+    content: ''; position: absolute; left: 10px; top: 0; bottom: 0;
+    width: 2px; background: var(--border);
+  }
+  .tl-item { position: relative; margin-bottom: 18px; }
+  .tl-dot {
+    position: absolute; left: -22px; top: 4px;
+    width: 12px; height: 12px; border-radius: 50%;
+    border: 2px solid var(--gold); background: var(--dark2);
+  }
+  .tl-dot.filled { background: var(--gold); }
+  .tl-label { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+  .tl-value { font-size: 13px; color: var(--text); }
+
+  /* ── QR MOCK ──────────────────────────────── */
+  .qr-area {
+    background: #fff; border-radius: 8px;
+    padding: 12px; display: inline-block; margin: 12px 0;
+  }
+  .qr-grid {
+    display: grid; grid-template-columns: repeat(10,14px);
+    gap: 1px;
+  }
+  .qr-cell { width: 14px; height: 14px; border-radius: 1px; }
+  .qr-b { background: #111; }
+  .qr-w { background: #fff; }
+
+  /* ── SEARCH ───────────────────────────────── */
+  .search-bar {
+    display: flex; gap: 10px; margin-bottom: 16px;
+  }
+  .search-bar input { flex: 1; }
+
+  /* ── ALERT ────────────────────────────────── */
+  .alert {
+    padding: 10px 14px; border-radius: 6px;
+    font-size: 12px; margin-bottom: 12px;
+    display: none;
+  }
+  .alert.show { display: block; }
+  .alert-success { background: rgba(46,204,113,.15); border: 1px solid #2ECC71; color: #2ECC71; }
+  .alert-error   { background: rgba(231,76,60,.15);  border: 1px solid #E74C3C; color: #E74C3C; }
+
+  /* ── MODAL ────────────────────────────────── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.7); z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--dark2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px;
+    max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto;
+  }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .modal-title { font-size: 15px; font-weight: 700; color: var(--gold); }
+  .close-btn { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; }
+
+  /* ── MISC ─────────────────────────────────── */
+  .pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .pill { background: var(--panel); border: 1px solid var(--border); border-radius: 99px; padding: 3px 10px; font-size: 11px; color: var(--muted); }
+  .section-hdr { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin: 18px 0 10px; }
+  .flex-between { display: flex; justify-content: space-between; align-items: center; }
+  .gap-8 { display: flex; gap: 8px; align-items: center; }
+  .mt-12 { margin-top: 12px; }
+  @media(max-width:600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .nav-tabs { display: none; }
+    .mobile-select { display: block; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">
+    <span class="logo-gem">💎</span>
+    <div>
+      <div class="logo-text">JoyTrack Perú</div>
+      <div class="logo-sub">Trazabilidad ESG de Joyas</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="goTo('dashboard')">Dashboard</button>
+    <button class="nav-tab" onclick="goTo('registro')">Registrar Joya</button>
+    <button class="nav-tab" onclick="goTo('inventario')">Inventario</button>
+    <button class="nav-tab" onclick="goTo('verificar')">Verificar QR</button>
+    <button class="nav-tab" onclick="goTo('auditor')">Panel Auditor</button>
+  </div>
+</nav>
+
+<!-- ALERT GLOBAL -->
+<div id="globalAlert" class="alert" style="margin:12px 24px;max-width:912px;margin-left:auto;margin-right:auto;"></div>
+
+<!-- ═══════════════════════════════════════
+     PÁGINA: DASHBOARD
+════════════════════════════════════════ -->
+<div id="p-dashboard" class="page active">
+  <div class="card-title" style="margin-bottom:20px;font-size:16px;">
+    ✦ Panel General — JoyTrack Perú
+  </div>
+
+  <div class="stats-grid" id="statsGrid">
+    <!-- filled by JS -->
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Últimas joyas registradas</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>N° Serie</th><th>Nombre</th><th>Material</th><th>Origen</th><th>Proveedor</th><th>Estado</th><th></th></tr>
+        </thead>
+        <tbody id="dashTable"><tr><td colspan="7" class="no-data">Sin registros aún</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📌 Acerca del Proyecto</div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.7;">
+      <strong style="color:var(--text);">JoyTrack Perú</strong> es una plataforma de trazabilidad ESG para joyas peruanas.
+      Permite registrar el origen de cada pieza, documentar su cadena de custodia y emitir certificados de autenticidad,
+      combatiendo el ingreso de joyas provenientes de minería ilegal al mercado formal.
+    </p>
+    <div class="pill-row" style="margin-top:12px;">
+      <span class="pill">🌿 Sostenibilidad ESG</span>
+      <span class="pill">🔗 Trazabilidad completa</span>
+      <span class="pill">📱 QR por joya</span>
+      <span class="pill">🏛️ B2B + B2C</span>
+      <span class="pill">🇵🇪 Minería responsable</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PÁGINA: REGISTRAR JOYA
+════════════════════════════════════════ -->
+<div id="p-registro" class="page">
+  <div class="card">
+    <div class="card-title">💎 Registrar nueva joya</div>
+
+    <div id="regAlert" class="alert"></div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Nombre de la joya *</label>
+        <input type="text" id="r_nombre" placeholder="Ej: Anillo de oro 18k">
+      </div>
+      <div class="form-group">
+        <label>Tipo de joya *</label>
+        <select id="r_tipo">
+          <option value="">Seleccionar...</option>
+          <option>Anillo</option><option>Collar</option><option>Pulsera</option>
+          <option>Aretes</option><option>Dije</option><option>Broche</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Material principal *</label>
+        <select id="r_material">
+          <option value="">Seleccionar...</option>
+          <option>Oro 24k</option><option>Oro 18k</option><option>Oro 14k</option>
+          <option>Plata 925</option><option>Plata 950</option>
+          <option>Platino</option><option>Oro blanco</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Piedra o gema (opcional)</label>
+        <input type="text" id="r_gema" placeholder="Ej: Turmalina, Esmeralda">
+      </div>
+      <div class="form-group">
+        <label>Región de origen *</label>
+        <select id="r_origen">
+          <option value="">Seleccionar...</option>
+          <option>Madre de Dios</option><option>Puno</option><option>Cusco</option>
+          <option>Arequipa</option><option>Cajamarca</option><option>La Libertad</option>
+          <option>Áncash</option><option>Lima</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tipo de minería *</label>
+        <select id="r_mineria">
+          <option value="">Seleccionar...</option>
+          <option>Artesanal certificada</option>
+          <option>Pequeña minería formal</option>
+          <option>Minería mediana formal</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nombre del proveedor / artesano *</label>
+        <input type="text" id="r_proveedor" placeholder="Nombre o razón social">
+      </div>
+      <div class="form-group">
+        <label>RUC del proveedor</label>
+        <input type="text" id="r_ruc" placeholder="20XXXXXXXXX" maxlength="11">
+      </div>
+      <div class="form-group full">
+        <label>Descripción de la pieza</label>
+        <textarea id="r_desc" placeholder="Detalles adicionales: peso, acabado, técnica de fabricación..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Peso (gramos)</label>
+        <input type="number" id="r_peso" placeholder="Ej: 5.2" step="0.1" min="0">
+      </div>
+      <div class="form-group">
+        <label>Fecha de fabricación</label>
+        <input type="date" id="r_fecha" value="">
+      </div>
+    </div>
+
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <button class="btn btn-primary" onclick="registrarJoya()">✦ Registrar y generar QR</button>
+      <button class="btn btn-outline" onclick="limpiarForm()">Limpiar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PÁGINA: INVENTARIO
+════════════════════════════════════════ -->
+<div id="p-inventario" class="page">
+  <div class="card">
+    <div class="card-title">📦 Inventario de joyas registradas</div>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Buscar por nombre, serie, material u origen..." oninput="filtrarInventario()">
+      <select id="filterStatus" onchange="filtrarInventario()" style="width:160px;">
+        <option value="">Todos los estados</option>
+        <option value="Pendiente">Pendiente</option>
+        <option value="En revisión">En revisión</option>
+        <option value="Aprobado">Aprobado</option>
+        <option value="Rechazado">Rechazado</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>N° Serie</th><th>Nombre</th><th>Tipo</th><th>Material</th><th>Origen</th><th>Minería</th><th>Estado ESG</th><th>Acciones</th></tr>
+        </thead>
+        <tbody id="invTable"><tr><td colspan="8" class="no-data">Sin registros aún</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PÁGINA: VERIFICAR QR (vista pública)
+════════════════════════════════════════ -->
+<div id="p-verificar" class="page">
+  <div class="card">
+    <div class="card-title">🔍 Verificar trazabilidad por N° de Serie</div>
+    <div class="search-bar">
+      <input type="text" id="qrSearch" placeholder="Ingresa el número de serie (Ej: JT-2026-0001)">
+      <button class="btn btn-primary" onclick="buscarJoya()">Verificar</button>
+    </div>
+    <p style="font-size:12px;color:var(--muted);">Esta vista simula lo que ve un cliente al escanear el QR de la joya.</p>
+  </div>
+
+  <div id="joyadetalle" style="display:none;">
+    <!-- filled by JS -->
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PÁGINA: PANEL AUDITOR
+════════════════════════════════════════ -->
+<div id="p-auditor" class="page">
+  <div class="card">
+    <div class="card-title">🏛️ Panel de Auditoría ESG</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">
+      Como auditor certificador, puedes aprobar o rechazar joyas pendientes de validación.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>N° Serie</th><th>Nombre</th><th>Proveedor</th><th>Origen</th><th>Minería</th><th>Estado</th><th>Acción</th></tr>
+        </thead>
+        <tbody id="audTable"><tr><td colspan="7" class="no-data">Sin joyas pendientes</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     MODAL: DETALLE DE JOYA
+════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">Detalle de joya</span>
+      <button class="close-btn" onclick="closeModalBtn()">✕</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ═══════════════════════════════════════════════════════
+let joyas = JSON.parse(localStorage.getItem('joytrack_joyas') || '[]');
+let counter = parseInt(localStorage.getItem('joytrack_counter') || '0');
+
+function save() {
+  localStorage.setItem('joytrack_joyas', JSON.stringify(joyas));
+  localStorage.setItem('joytrack_counter', counter);
+}
+
+// ── QR PATTERN GENERATOR (deterministic visual mock) ──
+function makeQRPattern(seed) {
+  const pat = [
+    [1,1,1,1,1,1,1,0,1,0],[1,0,0,0,0,0,1,0,0,1],[1,0,1,1,1,0,1,0,1,0],
+    [1,0,1,1,1,0,1,0,0,1],[1,0,1,1,1,0,1,0,1,1],[1,0,0,0,0,0,1,0,0,0],
+    [1,1,1,1,1,1,1,0,1,0],[0,0,0,0,0,0,0,0,0,1],[1,0,1,0,1,0,1,1,1,0],
+    [0,1,0,0,1,1,0,1,0,1]
+  ];
+  let h = 0; for(let i=0;i<seed.length;i++) h = (h*31+seed.charCodeAt(i))%256;
+  return pat.map((row,r)=>row.map((v,c)=>v^((h>>(r+c)%8)&0)&1));
+}
+
+function renderQR(serial) {
+  const grid = makeQRPattern(serial);
+  const cells = grid.flat().map(v=>`<div class="qr-cell ${v?'qr-b':'qr-w'}"></div>`).join('');
+  return `<div class="qr-area"><div class="qr-grid">${cells}</div></div>`;
+}
+
+// ── NAV ─────────────────────────────────────────────────
+function goTo(page) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('p-'+page).classList.add('active');
+  event.target.classList.add('active');
+  if(page==='dashboard') renderDashboard();
+  if(page==='inventario') renderInventario();
+  if(page==='auditor') renderAuditor();
+  document.getElementById('globalAlert').className='alert';
+}
+
+// ── HELPERS ─────────────────────────────────────────────
+function badgeHTML(status) {
+  const map = {
+    'Pendiente':'b-pending','En revisión':'b-review',
+    'Aprobado':'b-approved','Rechazado':'b-rejected'
+  };
+  return `<span class="badge ${map[status]||'b-pending'}">${status}</span>`;
+}
+
+function showAlert(id, msg, type='success') {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = `alert alert-${type} show`;
+  if(type==='success') setTimeout(()=>el.className='alert',3500);
+}
+
+function genSerial() {
+  counter++;
+  return `JT-2026-${String(counter).padStart(4,'0')}`;
+}
+
+// ── REGISTRO ─────────────────────────────────────────────
+function registrarJoya() {
+  const v = id => document.getElementById(id).value.trim();
+  const nombre=v('r_nombre'),tipo=v('r_tipo'),material=v('r_material'),
+        origen=v('r_origen'),mineria=v('r_mineria'),proveedor=v('r_proveedor');
+  if(!nombre||!tipo||!material||!origen||!mineria||!proveedor) {
+    showAlert('regAlert','⚠ Por favor completa todos los campos obligatorios (*)','error');
+    return;
+  }
+  const joya = {
+    serial: genSerial(),
+    nombre, tipo, material,
+    gema: v('r_gema') || '—',
+    origen, mineria, proveedor,
+    ruc: v('r_ruc') || '—',
+    descripcion: v('r_desc') || '—',
+    peso: v('r_peso') || '—',
+    fechaFab: v('r_fecha') || new Date().toISOString().split('T')[0],
+    fechaReg: new Date().toLocaleDateString('es-PE'),
+    estado: 'Pendiente',
+    historial: [
+      { fecha: new Date().toLocaleDateString('es-PE'), evento: 'Joya registrada en el sistema', actor: proveedor },
+      { fecha: new Date().toLocaleDateString('es-PE'), evento: 'QR generado y vinculado', actor: 'Sistema JoyTrack' },
+    ]
+  };
+  joyas.unshift(joya);
+  save();
+  showAlert('regAlert',`✓ Joya registrada exitosamente. N° de serie: ${joya.serial}`,'success');
+  limpiarForm();
+  renderDashboard();
+}
+
+function limpiarForm() {
+  ['r_nombre','r_tipo','r_material','r_gema','r_origen','r_mineria',
+   'r_proveedor','r_ruc','r_desc','r_peso','r_fecha'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value='';
+  });
+}
+
+// ── DASHBOARD ────────────────────────────────────────────
+function renderDashboard() {
+  const total=joyas.length;
+  const aprobadas=joyas.filter(j=>j.estado==='Aprobado').length;
+  const pendientes=joyas.filter(j=>j.estado==='Pendiente').length;
+  const rechazadas=joyas.filter(j=>j.estado==='Rechazado').length;
+  document.getElementById('statsGrid').innerHTML=`
+    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-lbl">Joyas registradas</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--green)">${aprobadas}</div><div class="stat-lbl">Certificadas ESG</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--orange)">${pendientes}</div><div class="stat-lbl">Pendientes</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--accent)">${rechazadas}</div><div class="stat-lbl">Rechazadas</div></div>
+  `;
+  const tbody=document.getElementById('dashTable');
+  if(!joyas.length){
+    tbody.innerHTML='<tr><td colspan="7" class="no-data">Sin registros aún — registra tu primera joya</td></tr>';
+    return;
+  }
+  tbody.innerHTML=joyas.slice(0,8).map(j=>`
+    <tr>
+      <td style="font-family:monospace;color:var(--gold);font-size:11px;">${j.serial}</td>
+      <td>${j.nombre}</td><td>${j.material}</td><td>${j.origen}</td>
+      <td>${j.proveedor}</td><td>${badgeHTML(j.estado)}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="verDetalle('${j.serial}')">Ver</button></td>
+    </tr>`).join('');
+}
+
+// ── INVENTARIO ───────────────────────────────────────────
+function renderInventario(filtro='', estadoFiltro='') {
+  const tbody=document.getElementById('invTable');
+  let lista=joyas.filter(j=>{
+    const q=filtro.toLowerCase();
+    const match = !q||(j.nombre+j.serial+j.material+j.origen).toLowerCase().includes(q);
+    const estat = !estadoFiltro||j.estado===estadoFiltro;
+    return match&&estat;
+  });
+  if(!lista.length){
+    tbody.innerHTML='<tr><td colspan="8" class="no-data">No se encontraron joyas</td></tr>';
+    return;
+  }
+  tbody.innerHTML=lista.map(j=>`
+    <tr>
+      <td style="font-family:monospace;color:var(--gold);font-size:11px;">${j.serial}</td>
+      <td>${j.nombre}</td><td>${j.tipo}</td><td>${j.material}</td>
+      <td>${j.origen}</td>
+      <td><span class="badge" style="background:#1A5276;color:#fff;font-size:10px;">${j.mineria}</span></td>
+      <td>${badgeHTML(j.estado)}</td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-outline btn-sm" onclick="verDetalle('${j.serial}')">🔍 Ver</button>
+        <button class="btn btn-danger btn-sm" onclick="eliminarJoya('${j.serial}')">✕</button>
+      </td>
+    </tr>`).join('');
+}
+
+function filtrarInventario() {
+  renderInventario(
+    document.getElementById('searchInput').value,
+    document.getElementById('filterStatus').value
+  );
+}
+
+function eliminarJoya(serial) {
+  if(!confirm(`¿Eliminar la joya ${serial}?`)) return;
+  joyas=joyas.filter(j=>j.serial!==serial);
+  save(); renderInventario(); renderDashboard();
+}
+
+// ── VERIFICAR / VISTA PÚBLICA ────────────────────────────
+function buscarJoya() {
+  const q=document.getElementById('qrSearch').value.trim().toUpperCase();
+  const joya=joyas.find(j=>j.serial===q);
+  const div=document.getElementById('joyadetalle');
+  if(!joya){ div.style.display='none'; showAlert('globalAlert',`No se encontró ninguna joya con el N° de serie "${q}"`,'error'); return; }
+  document.getElementById('globalAlert').className='alert';
+  const esgBadge = joya.estado==='Aprobado'
+    ? `<span class="badge b-legal" style="font-size:12px;padding:5px 14px;">✓ CERTIFICADA ESG</span>`
+    : `<span class="badge b-pending" style="font-size:12px;padding:5px 14px;">⏳ EN PROCESO DE CERTIFICACIÓN</span>`;
+  div.style.display='block';
+  div.innerHTML=`
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div style="font-size:20px;font-weight:700;color:var(--gold);margin-bottom:6px;">${joya.nombre}</div>
+          <div style="font-size:12px;color:var(--muted);font-family:monospace;">${joya.serial}</div>
+          <div style="margin-top:10px;">${esgBadge}</div>
+        </div>
+        <div style="text-align:center;">
+          ${renderQR(joya.serial)}
+          <div style="font-size:10px;color:var(--muted);">Código QR de trazabilidad</div>
+        </div>
+      </div>
+
+      <div class="section-hdr">Información de la pieza</div>
+      <div class="form-grid">
+        ${[['Tipo',joya.tipo],['Material',joya.material],['Gema / Piedra',joya.gema],
+           ['Peso',joya.peso!=='—'?joya.peso+' g':joya.peso],['Fecha fabricación',joya.fechaFab],
+           ['Descripción',joya.descripcion]].map(([k,v])=>`
+          <div><div style="font-size:11px;color:var(--muted);">${k}</div>
+          <div style="font-size:13px;margin-top:3px;">${v}</div></div>`).join('')}
+      </div>
+
+      <div class="section-hdr">Cadena de origen</div>
+      <div class="form-grid">
+        ${[['Región de origen',joya.origen],['Tipo de minería',joya.mineria],
+           ['Proveedor / Artesano',joya.proveedor],['RUC',joya.ruc]].map(([k,v])=>`
+          <div><div style="font-size:11px;color:var(--muted);">${k}</div>
+          <div style="font-size:13px;margin-top:3px;">${v}</div></div>`).join('')}
+      </div>
+
+      <div class="section-hdr">Historial de trazabilidad</div>
+      <div class="timeline">
+        ${joya.historial.map((h,i)=>`
+          <div class="tl-item">
+            <div class="tl-dot ${i===joya.historial.length-1?'filled':''}"></div>
+            <div class="tl-label">${h.fecha} · ${h.actor}</div>
+            <div class="tl-value">${h.evento}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+// ── AUDITOR ──────────────────────────────────────────────
+function renderAuditor() {
+  const tbody=document.getElementById('audTable');
+  const lista=joyas.filter(j=>j.estado!=='Aprobado');
+  if(!lista.length){
+    tbody.innerHTML='<tr><td colspan="7" class="no-data">✓ Todas las joyas están certificadas</td></tr>';
+    return;
+  }
+  tbody.innerHTML=lista.map(j=>`
+    <tr>
+      <td style="font-family:monospace;color:var(--gold);font-size:11px;">${j.serial}</td>
+      <td>${j.nombre}</td><td>${j.proveedor}</td><td>${j.origen}</td>
+      <td>${j.mineria}</td><td>${badgeHTML(j.estado)}</td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-sm" style="background:var(--green);color:#fff;" onclick="cambiarEstado('${j.serial}','Aprobado')">✓ Aprobar</button>
+        <button class="btn btn-sm" style="background:#E67E22;color:#fff;" onclick="cambiarEstado('${j.serial}','En revisión')">⏳ Revisar</button>
+        <button class="btn btn-danger btn-sm" onclick="cambiarEstado('${j.serial}','Rechazado')">✕ Rechazar</button>
+      </td>
+    </tr>`).join('');
+}
+
+function cambiarEstado(serial, nuevoEstado) {
+  const joya=joyas.find(j=>j.serial===serial);
+  if(!joya) return;
+  joya.estado=nuevoEstado;
+  const msgs={
+    'Aprobado':'Certificación ESG aprobada por auditor',
+    'En revisión':'Documentación en proceso de revisión',
+    'Rechazado':'Documentación rechazada — requiere correcciones'
+  };
+  joya.historial.push({
+    fecha: new Date().toLocaleDateString('es-PE'),
+    evento: msgs[nuevoEstado],
+    actor: 'Auditor ESG — JoyTrack'
+  });
+  save(); renderAuditor(); renderDashboard();
+  showAlert('globalAlert',`Estado de ${serial} actualizado a: ${nuevoEstado}`,'success');
+}
+
+// ── MODAL DETALLE ────────────────────────────────────────
+function verDetalle(serial) {
+  const j=joyas.find(x=>x.serial===serial);
+  if(!j) return;
+  document.getElementById('modalTitle').textContent=`${j.nombre} · ${j.serial}`;
+  document.getElementById('modalBody').innerHTML=`
+    <div style="text-align:center;margin-bottom:16px;">
+      ${renderQR(j.serial)}
+      <div style="font-size:10px;color:var(--muted);">Código QR único</div>
+    </div>
+    ${[['Estado ESG',badgeHTML(j.estado)],['Tipo',j.tipo],['Material',j.material],
+       ['Gema',j.gema],['Origen',j.origen],['Minería',j.mineria],
+       ['Proveedor',j.proveedor],['RUC',j.ruc],['Peso',j.peso],
+       ['Fecha fabricación',j.fechaFab],['Fecha registro',j.fechaReg],
+       ['Descripción',j.descripcion]].map(([k,v])=>`
+      <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.05);padding:8px 0;font-size:13px;">
+        <span style="color:var(--muted);">${k}</span><span>${v}</span>
+      </div>`).join('')}
+    <div class="section-hdr" style="margin-top:16px;">Historial</div>
+    <div class="timeline">
+      ${j.historial.map((h,i)=>`
+        <div class="tl-item">
+          <div class="tl-dot ${i===j.historial.length-1?'filled':''}"></div>
+          <div class="tl-label">${h.fecha} · ${h.actor}</div>
+          <div class="tl-value">${h.evento}</div>
+        </div>`).join('')}
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function closeModal(e) { if(e.target.id==='modalOverlay') closeModalBtn(); }
+function closeModalBtn() { document.getElementById('modalOverlay').classList.remove('show'); }
+
+// ── INIT ─────────────────────────────────────────────────
+document.getElementById('r_fecha').value = new Date().toISOString().split('T')[0];
+renderDashboard();
+</script>
+</body>
+</html>
