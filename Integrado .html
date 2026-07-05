@@ -1,0 +1,3344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JoyTrack Perú — MVP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ── RESET & BASE ─────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream:    #FAF8F3;
+    --paper:    #FFFFFF;
+    --ink:      #2A2723;
+    --ink-soft: #7A7267;
+    --gold:     #9C7A3C;
+    --gold-dk:  #7A5F2E;
+    --gold-tint:#F3ECDD;
+    --line:     #E6E0D2;
+    --green:    #3F6B52;
+    --green-bg: #E7EFE9;
+    --amber:    #A8752F;
+    --amber-bg: #F5E9D6;
+    --slate:    #45607E;
+    --slate-bg: #E7EDF3;
+    --wine:     #8A3E3E;
+    --wine-bg:  #F3E4E2;
+    --radius:   10px;
+  }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── NAV ──────────────────────────────────── */
+  nav {
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-mark {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 1.5px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif; font-weight: 600;
+    font-size: 15px; color: var(--gold-dk);
+  }
+  .logo-text { font-family: 'Cormorant Garamond', serif; font-size: 21px; font-weight: 700; color: var(--ink); letter-spacing: .3px; }
+  .logo-sub { font-size: 10.5px; color: var(--ink-soft); letter-spacing: .4px; }
+  .nav-tabs { display: flex; gap: 4px; }
+  .nav-tab {
+    padding: 8px 16px; border-radius: 6px; border: none;
+    background: transparent; color: var(--ink-soft);
+    cursor: pointer; font-size: 13px; font-family: inherit; transition: all .2s;
+  }
+  .nav-tab.active, .nav-tab:hover { background: var(--gold-tint); color: var(--gold-dk); }
+  .nav-tab.active { font-weight: 600; }
+
+  /* ── LAYOUT ───────────────────────────────── */
+  .page { display: none; padding: 28px; max-width: 1040px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* ── CARDS ────────────────────────────────── */
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 2px rgba(42,39,35,.03), 0 6px 20px rgba(42,39,35,.03);
+  }
+  .card-title {
+    font-size: 12px; font-weight: 600;
+    color: var(--gold-dk); text-transform: uppercase;
+    letter-spacing: .8px; margin-bottom: 18px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* ── FORM ─────────────────────────────────── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1/-1; }
+  label { font-size: 12px; color: var(--ink-soft); font-weight: 500; }
+  input, select, textarea {
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--ink);
+    padding: 9px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .2s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--gold); background: var(--paper); }
+  select option { background: var(--paper); }
+  textarea { resize: vertical; min-height: 70px; }
+  .btn {
+    padding: 10px 22px; border-radius: 6px; border: none;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all .2s; font-family: inherit;
+  }
+  .btn-primary { background: var(--gold-dk); color: #fff; }
+  .btn-primary:hover { background: #654e26; }
+  .btn-danger { background: transparent; color: var(--wine); border: 1px solid var(--wine); }
+  .btn-danger:hover { background: var(--wine-bg); }
+  .btn-sm { padding: 5px 12px; font-size: 11px; }
+  .btn-outline {
+    background: transparent; color: var(--gold-dk);
+    border: 1px solid var(--gold);
+  }
+  .btn-outline:hover { background: var(--gold-tint); }
+
+  /* ── BADGES ───────────────────────────────── */
+  .badge {
+    display: inline-block; padding: 3px 10px;
+    border-radius: 99px; font-size: 10.5px; font-weight: 600;
+    letter-spacing: .2px;
+  }
+  .b-pending  { background: var(--amber-bg); color: var(--amber); }
+  .b-review   { background: var(--slate-bg); color: var(--slate); }
+  .b-approved { background: var(--green-bg); color: var(--green); }
+  .b-rejected { background: var(--wine-bg);  color: var(--wine); }
+
+  /* ── TABLE ────────────────────────────────── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th {
+    padding: 10px 12px; text-align: left;
+    background: var(--gold-tint); color: var(--gold-dk);
+    font-size: 10.5px; font-weight: 700; letter-spacing: .4px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  td {
+    padding: 10px 12px; border-bottom: 1px solid var(--line);
+    color: var(--ink);
+  }
+  tr:hover td { background: #FBF7EE; }
+  .no-data { text-align: center; color: var(--ink-soft); padding: 34px; font-size: 13px; }
+
+  /* ── STATS ────────────────────────────────── */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+  .stat-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px; text-align: center;
+    box-shadow: 0 1px 2px rgba(42,39,35,.03);
+  }
+  .stat-num { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 700; color: var(--gold-dk); }
+  .stat-lbl { font-size: 11px; color: var(--ink-soft); margin-top: 4px; letter-spacing: .2px; }
+
+  /* ── TIMELINE ─────────────────────────────── */
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before {
+    content: ''; position: absolute; left: 10px; top: 0; bottom: 0;
+    width: 1px; background: var(--line);
+  }
+  .tl-item { position: relative; margin-bottom: 18px; }
+  .tl-dot {
+    position: absolute; left: -22px; top: 4px;
+    width: 11px; height: 11px; border-radius: 50%;
+    border: 2px solid var(--gold); background: var(--paper);
+  }
+  .tl-dot.filled { background: var(--gold); }
+  .tl-label { font-size: 11px; color: var(--ink-soft); margin-bottom: 2px; }
+  .tl-value { font-size: 13px; color: var(--ink); }
+
+  /* ── QR MOCK ──────────────────────────────── */
+  .qr-area {
+    background: #fff; border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px; display: inline-block; margin: 12px 0;
+  }
+  .qr-grid {
+    display: grid; grid-template-columns: repeat(10,14px);
+    gap: 1px;
+  }
+  .qr-cell { width: 14px; height: 14px; border-radius: 1px; }
+  .qr-b { background: var(--ink); }
+  .qr-w { background: #fff; }
+
+  .qr-mini-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
+  .qr-mini {
+    background: #fff; border: 1px solid var(--line); border-radius: 4px;
+    padding: 4px; display: grid; grid-template-columns: repeat(10,3.4px); gap: .5px;
+  }
+  .qr-mini-cell { width: 3.4px; height: 3.4px; }
+  .qr-mini-label { font-size: 9.5px; color: var(--ink-soft); }
+  .qr-mini-wrap:hover .qr-mini-label { color: var(--gold-dk); }
+
+  /* ── SEARCH ───────────────────────────────── */
+  .search-bar {
+    display: flex; gap: 10px; margin-bottom: 18px;
+  }
+  .search-bar input { flex: 1; }
+
+  /* ── ALERT ────────────────────────────────── */
+  .alert {
+    padding: 10px 14px; border-radius: 6px;
+    font-size: 12px; margin-bottom: 12px;
+    display: none;
+  }
+  .alert.show { display: block; }
+  .alert-success { background: var(--green-bg); border: 1px solid var(--green); color: var(--green); }
+  .alert-error   { background: var(--wine-bg);  border: 1px solid var(--wine); color: var(--wine); }
+
+  /* ── MODAL ────────────────────────────────── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(42,39,35,.45); z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--paper); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 26px;
+    max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(42,39,35,.18);
+  }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 700; color: var(--gold-dk); }
+  .close-btn { background: none; border: none; color: var(--ink-soft); font-size: 20px; cursor: pointer; line-height: 1; }
+  .close-btn:hover { color: var(--wine); }
+
+  /* ── MISC ─────────────────────────────────── */
+  .pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .pill { background: var(--gold-tint); border: 1px solid var(--line); border-radius: 99px; padding: 4px 12px; font-size: 11px; color: var(--gold-dk); }
+  .section-hdr { font-size: 11px; color: var(--ink-soft); font-weight: 700; text-transform: uppercase; letter-spacing: .6px; margin: 20px 0 10px; }
+  .flex-between { display: flex; justify-content: space-between; align-items: center; }
+  .gap-8 { display: flex; gap: 8px; align-items: center; }
+  .mt-12 { margin-top: 12px; }
+  @media(max-width:600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .nav-tabs { display: none; }
+    .mobile-select { display: block; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">
+    <div class="logo-mark">JT</div>
+    <div>
+      <div class="logo-text">JoyTrack Perú</div>
+      <div class="logo-sub">TRAZABILIDAD ESG DE JOYAS</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="goTo('dashboard')">Dashboard</button>
+    <button class="nav-tab" onclick="goTo('registro')">Registrar Joya</button>
+    <button class="nav-tab" onclick="goTo('inventario')">Inventario</button>
+    <button class="nav-tab" onclick="goTo('verificar')">Verificar QR</button>
+    <button class="nav-tab" onclick="goTo('auditor')">Panel Auditor</button>
+  </div>
+</nav>
+
+<!-- ALERT GLOBAL -->
+<div id="globalAlert" class="alert" style="margin:12px 28px;max-width:984px;margin-left:auto;margin-right:auto;"></div>
+
+<!-- ═══════════════════════════════════════
+     PÁGINA: DASHBOARD
+════════════════════════════════════════ -->
+<div id="p-dashboard" class="page active">
+  <div class="card-title" style="margin-bottom:20px;font-size:16px;letter-spacing:.4px;">
+    Panel General — JoyTrack Perú
+  </div>
+
+  <div class="stats-grid" id="statsGrid">
+    <!-- filled by JS -->
+  </div>
+
+  <div class="card">
+    <div class="card-title">Últimas joyas registradas</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>N° Serie</th><th>Nombre</th><th>Material</th><th>Región</th><th>Proveedor</th><th>Estado</th><th></th></tr>
+        </thead>
+        <tbody id="dashTable"><tr><td colspan="7" class="no-data">Sin registros aún</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Acerca del proyecto</div>
+    <p style="font-size:13px;color:var(--ink-soft);line-height:1.75;">
+      <strong style="color:var(--ink);">JoyTrack Perú</strong> es una plataforma de trazabilidad ESG para joyas peruanas.
+      Permite registrar el origen de cada pieza, documentar su cadena de custodia y emitir certificados de autenticidad,
+      combatiendo el ingreso de joyas provenientes de minería ilegal al mercado formal.
+    </p>
+    <div class="pill-row" style="margin-top:12px;">
+      <span class="pill">Sostenibilidad ESG</span>
+      <span class="pill">Trazabilidad completa</span>
+      <span class="pill">QR por joya</span>
+      <span class="pill">B2B + B2C</span>
+      <span class="pill">Minería responsable</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PÁGINA: REGISTRAR JOYA
+════════════════════════════════════════ -->
+<div id="p-registro" class="page">
+  <div class="card">
+    <div class="card-title">Registrar nueva joya</div>
+
+    <div id="regAlert" class="alert"></div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Nombre de la joya *</label>
+        <input type="text" id="r_nombre" placeholder="Ej: Anillo de oro 18k">
+      </div>
+      <div class="form-group">
+        <label>Tipo de joya *</label>
+        <select id="r_tipo">
+          <option value="">Seleccionar...</option>
+          <option>Anillo</option><option>Collar</option><option>Pulsera</option>
+          <option>Aretes</option><option>Dije</option><option>Broche</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Material principal *</label>
+        <select id="r_material">
+          <option value="">Seleccionar...</option>
+          <option>Oro 24k</option><option>Oro 18k</option><option>Oro 14k</option>
+          <option>Plata 925</option><option>Plata 950</option>
+          <option>Platino</option><option>Oro blanco</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Piedra o gema (opcional)</label>
+        <input type="text" id="r_gema" placeholder="Ej: Turmalina, Esmeralda">
+      </div>
+      <div class="form-group">
+        <label>Región de origen *</label>
+        <select id="r_origen">
+          <option value="">Seleccionar...</option>
+          <option>Madre de Dios</option><option>Puno</option><option>Cusco</option>
+          <option>Arequipa</option><option>Cajamarca</option><option>La Libertad</option>
+          <option>Áncash</option><option>Lima</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tipo de minería *</label>
+        <select id="r_mineria">
+          <option value="">Seleccionar...</option>
+          <option>Artesanal certificada</option>
+          <option>Pequeña minería formal</option>
+          <option>Minería mediana formal</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nombre del proveedor / artesano *</label>
+        <input type="text" id="r_proveedor" placeholder="Nombre o razón social">
+      </div>
+      <div class="form-group">
+        <label>RUC del proveedor</label>
+        <input type="text" id="r_ruc" placeholder="20XXXXXXXXX" maxlength="11">
+      </div>
+      <div class="form-group full">
+        <label>Descripción de la pieza</label>
+        <textarea id="r_desc" placeholder="Detalles adicionales: peso, acabado, técnica de fabricación..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Peso (gramos)</label>
+        <input type="number" id="r_peso" placeholder="Ej: 5.2" step="0.1" min="0">
+      </div>
+      <div class="form-group">
+        <label>Fecha de fabricación</label>
+        <input type="date" id="r_fecha" value="">
+      </div>
+    </div>
+
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <button class="btn btn-primary" onclick="registrarJoya()">Registrar y generar QR</button>
+      <button class="btn btn-outline" onclick="limpiarForm()">Limpiar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PÁGINA: INVENTARIO
+════════════════════════════════════════ -->
+<div id="p-inventario" class="page">
+  <div class="card">
+    <div class="card-title">Inventario de joyas registradas</div>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Buscar por nombre, serie, material, región o proveedor..." oninput="filtrarInventario()">
+      <select id="filterStatus" onchange="filtrarInventario()" style="width:170px;">
+        <option value="">Todos los estados</option>
+        <option value="Pendiente">Pendiente</option>
+        <option value="En revisión">En revisión</option>
+        <option value="Aprobado">Aprobado</option>
+        <option value="Rechazado">Rechazado</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Serie</th><th>Nombre</th><th>Tipo</th><th>Material</th>
+            <th>Peso</th><th>Región</th><th>Minería</th><th>Proveedor</th>
+            <th>Fecha Registro</th><th>Estado</th><th>QR</th>
+          </tr>
+        </thead>
+        <tbody id="invTable"><tr><td colspan="11" class="no-data">Sin registros aún</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PÁGINA: VERIFICAR QR (vista pública)
+════════════════════════════════════════ -->
+<div id="p-verificar" class="page">
+  <div class="card">
+    <div class="card-title">Verificar trazabilidad por N° de Serie</div>
+    <div class="search-bar">
+      <input type="text" id="qrSearch" placeholder="Ingresa el número de serie (Ej: JT-2026-0001)">
+      <button class="btn btn-primary" onclick="buscarJoya()">Verificar</button>
+    </div>
+    <p style="font-size:12px;color:var(--ink-soft);">Esta vista simula lo que ve un cliente al escanear el QR de la joya.</p>
+  </div>
+
+  <div id="joyadetalle" style="display:none;">
+    <!-- filled by JS -->
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PÁGINA: PANEL AUDITOR
+════════════════════════════════════════ -->
+<div id="p-auditor" class="page">
+  <div class="card">
+    <div class="card-title">Panel de auditoría ESG</div>
+    <p style="font-size:12px;color:var(--ink-soft);margin-bottom:16px;">
+      Como auditor certificador, puedes aprobar o rechazar joyas pendientes de validación.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>N° Serie</th><th>Nombre</th><th>Proveedor</th><th>Región</th><th>Minería</th><th>Estado</th><th>Acción</th></tr>
+        </thead>
+        <tbody id="audTable"><tr><td colspan="7" class="no-data">Sin joyas pendientes</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     MODAL: DETALLE DE JOYA
+════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">Detalle de joya</span>
+      <button class="close-btn" onclick="closeModalBtn()">✕</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATOS BASE — 78 joyas importadas de Base_Datos_JoyTrack_500_Registros.csv
+// ═══════════════════════════════════════════════════════
+const SEED_JOYAS = [
+  {
+    "serial": "JT-2026-0001",
+    "nombre": "Dije Killa",
+    "tipo": "Dije",
+    "material": "Oro 14k",
+    "gema": "—",
+    "origen": "Cajamarca",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Minera Aurífera Andina S.A.C.",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "16.6",
+    "fechaFab": "2026-04-19",
+    "fechaReg": "19/04/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "19/04/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Minera Aurífera Andina S.A.C."
+      },
+      {
+        "fecha": "19/04/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "19/04/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0002",
+    "nombre": "Pulsera Andes",
+    "tipo": "Pulsera",
+    "material": "Oro 14k",
+    "gema": "—",
+    "origen": "Cusco",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Miski Gold Export",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "23.3",
+    "fechaFab": "2026-12-02",
+    "fechaReg": "02/12/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "02/12/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Miski Gold Export"
+      },
+      {
+        "fecha": "02/12/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "02/12/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0003",
+    "nombre": "Anillo Andes",
+    "tipo": "Anillo",
+    "material": "Plata 950",
+    "gema": "—",
+    "origen": "Madre de Dios",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Andean Silver Perú",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "9",
+    "fechaFab": "2026-09-10",
+    "fechaReg": "10/09/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "10/09/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Andean Silver Perú"
+      },
+      {
+        "fecha": "10/09/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "10/09/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0004",
+    "nombre": "Dije Wiracocha",
+    "tipo": "Dije",
+    "material": "Plata 950",
+    "gema": "—",
+    "origen": "Puno",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Consorcio Qori Wasi",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "3.4",
+    "fechaFab": "2026-06-19",
+    "fechaReg": "19/06/2026",
+    "estado": "Pendiente",
+    "historial": [
+      {
+        "fecha": "19/06/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Consorcio Qori Wasi"
+      },
+      {
+        "fecha": "19/06/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0005",
+    "nombre": "Anillo Cóndor",
+    "tipo": "Anillo",
+    "material": "Oro 24k",
+    "gema": "—",
+    "origen": "Arequipa",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Minera Apumayo",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "23.9",
+    "fechaFab": "2026-06-12",
+    "fechaReg": "12/06/2026",
+    "estado": "Pendiente",
+    "historial": [
+      {
+        "fecha": "12/06/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Minera Apumayo"
+      },
+      {
+        "fecha": "12/06/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0006",
+    "nombre": "Collar Sol",
+    "tipo": "Collar",
+    "material": "Oro 14k",
+    "gema": "—",
+    "origen": "Cusco",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "JoyMiner Perú",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "14.2",
+    "fechaFab": "2026-07-18",
+    "fechaReg": "18/07/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "18/07/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "JoyMiner Perú"
+      },
+      {
+        "fecha": "18/07/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "18/07/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0007",
+    "nombre": "Anillo Inti",
+    "tipo": "Anillo",
+    "material": "Oro 24k",
+    "gema": "—",
+    "origen": "Áncash",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "JoyMiner Perú",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "14.8",
+    "fechaFab": "2026-08-06",
+    "fechaReg": "06/08/2026",
+    "estado": "En revisión",
+    "historial": [
+      {
+        "fecha": "06/08/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "JoyMiner Perú"
+      },
+      {
+        "fecha": "06/08/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "06/08/2026",
+        "evento": "Documentación en proceso de revisión",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0008",
+    "nombre": "Dije Inti",
+    "tipo": "Dije",
+    "material": "Oro 14k",
+    "gema": "—",
+    "origen": "Cajamarca",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Cooperativa Los Andes",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "18.4",
+    "fechaFab": "2026-06-02",
+    "fechaReg": "02/06/2026",
+    "estado": "En revisión",
+    "historial": [
+      {
+        "fecha": "02/06/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Cooperativa Los Andes"
+      },
+      {
+        "fecha": "02/06/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "02/06/2026",
+        "evento": "Documentación en proceso de revisión",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0009",
+    "nombre": "Dije Inca",
+    "tipo": "Dije",
+    "material": "Oro 14k",
+    "gema": "—",
+    "origen": "Arequipa",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Corporación Minera Inti",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "15.1",
+    "fechaFab": "2026-03-13",
+    "fechaReg": "13/03/2026",
+    "estado": "Rechazado",
+    "historial": [
+      {
+        "fecha": "13/03/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Corporación Minera Inti"
+      },
+      {
+        "fecha": "13/03/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "13/03/2026",
+        "evento": "Documentación rechazada — requiere correcciones",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0010",
+    "nombre": "Dije Wiracocha",
+    "tipo": "Dije",
+    "material": "Oro 18k",
+    "gema": "—",
+    "origen": "La Libertad",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Corporación Minera Inti",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "14.7",
+    "fechaFab": "2026-10-17",
+    "fechaReg": "17/10/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "17/10/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Corporación Minera Inti"
+      },
+      {
+        "fecha": "17/10/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "17/10/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0011",
+    "nombre": "Collar Sumaq",
+    "tipo": "Collar",
+    "material": "Oro 14k",
+    "gema": "—",
+    "origen": "Lima",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Plata del Sur S.A.C.",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "10.5",
+    "fechaFab": "2026-11-20",
+    "fechaReg": "20/11/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "20/11/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Plata del Sur S.A.C."
+      },
+      {
+        "fecha": "20/11/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "20/11/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0012",
+    "nombre": "Aretes Misti",
+    "tipo": "Aretes",
+    "material": "Oro 24k",
+    "gema": "—",
+    "origen": "Cusco",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Corporación Minera Inti",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "21.2",
+    "fechaFab": "2026-04-24",
+    "fechaReg": "24/04/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "24/04/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Corporación Minera Inti"
+      },
+      {
+        "fecha": "24/04/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "24/04/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0013",
+    "nombre": "Pulsera Cóndor",
+    "tipo": "Pulsera",
+    "material": "Plata 925",
+    "gema": "—",
+    "origen": "La Libertad",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Cooperativa Minera San José",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "18",
+    "fechaFab": "2026-05-01",
+    "fechaReg": "01/05/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "01/05/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Cooperativa Minera San José"
+      },
+      {
+        "fecha": "01/05/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "01/05/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0014",
+    "nombre": "Pulsera Sumaq",
+    "tipo": "Pulsera",
+    "material": "Oro blanco",
+    "gema": "—",
+    "origen": "Arequipa",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Minera Apumayo",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "20.9",
+    "fechaFab": "2026-02-21",
+    "fechaReg": "21/02/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "21/02/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Minera Apumayo"
+      },
+      {
+        "fecha": "21/02/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "21/02/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0015",
+    "nombre": "Broche Andes",
+    "tipo": "Broche",
+    "material": "Oro 18k",
+    "gema": "—",
+    "origen": "Cusco",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Andean Silver Perú",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "9.9",
+    "fechaFab": "2026-08-25",
+    "fechaReg": "25/08/2026",
+    "estado": "Rechazado",
+    "historial": [
+      {
+        "fecha": "25/08/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Andean Silver Perú"
+      },
+      {
+        "fecha": "25/08/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "25/08/2026",
+        "evento": "Documentación rechazada — requiere correcciones",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0016",
+    "nombre": "Dije Andes",
+    "tipo": "Dije",
+    "material": "Oro 18k",
+    "gema": "—",
+    "origen": "Áncash",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Cooperativa Minera San José",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "23.3",
+    "fechaFab": "2026-01-17",
+    "fechaReg": "17/01/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "17/01/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Cooperativa Minera San José"
+      },
+      {
+        "fecha": "17/01/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "17/01/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0017",
+    "nombre": "Collar Inti",
+    "tipo": "Collar",
+    "material": "Plata 950",
+    "gema": "—",
+    "origen": "Madre de Dios",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Corporación Minera Inti",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "8.4",
+    "fechaFab": "2026-11-02",
+    "fechaReg": "02/11/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "02/11/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Corporación Minera Inti"
+      },
+      {
+        "fecha": "02/11/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "02/11/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0018",
+    "nombre": "Anillo Sumaq",
+    "tipo": "Anillo",
+    "material": "Oro blanco",
+    "gema": "—",
+    "origen": "Madre de Dios",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Minera Apumayo",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "21.7",
+    "fechaFab": "2026-08-06",
+    "fechaReg": "06/08/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "06/08/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Minera Apumayo"
+      },
+      {
+        "fecha": "06/08/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "06/08/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0019",
+    "nombre": "Broche Wiracocha",
+    "tipo": "Broche",
+    "material": "Plata 925",
+    "gema": "—",
+    "origen": "Áncash",
+    "mineria": "Artesanal certificada",
+    "proveedor": "JoyMiner Perú",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "3.9",
+    "fechaFab": "2026-10-11",
+    "fechaReg": "11/10/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "11/10/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "JoyMiner Perú"
+      },
+      {
+        "fecha": "11/10/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "11/10/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0020",
+    "nombre": "Collar Misti",
+    "tipo": "Collar",
+    "material": "Oro 14k",
+    "gema": "—",
+    "origen": "Arequipa",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Miski Gold Export",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "16.4",
+    "fechaFab": "2026-07-07",
+    "fechaReg": "07/07/2026",
+    "estado": "Pendiente",
+    "historial": [
+      {
+        "fecha": "07/07/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Miski Gold Export"
+      },
+      {
+        "fecha": "07/07/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0021",
+    "nombre": "Anillo Llaqta",
+    "tipo": "Anillo",
+    "material": "Plata 925",
+    "gema": "—",
+    "origen": "Áncash",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Corporación Minera Inti",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "5.6",
+    "fechaFab": "2026-05-14",
+    "fechaReg": "14/05/2026",
+    "estado": "En revisión",
+    "historial": [
+      {
+        "fecha": "14/05/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Corporación Minera Inti"
+      },
+      {
+        "fecha": "14/05/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "14/05/2026",
+        "evento": "Documentación en proceso de revisión",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0022",
+    "nombre": "Collar Cóndor",
+    "tipo": "Collar",
+    "material": "Oro 24k",
+    "gema": "—",
+    "origen": "Madre de Dios",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Corporación Minera Inti",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "9.2",
+    "fechaFab": "2026-12-27",
+    "fechaReg": "27/12/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "27/12/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Corporación Minera Inti"
+      },
+      {
+        "fecha": "27/12/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "27/12/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0023",
+    "nombre": "Dije Pachamama",
+    "tipo": "Dije",
+    "material": "Plata 950",
+    "gema": "—",
+    "origen": "Cajamarca",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Qori Minerals S.A.C.",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "22.4",
+    "fechaFab": "2026-01-04",
+    "fechaReg": "04/01/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "04/01/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Qori Minerals S.A.C."
+      },
+      {
+        "fecha": "04/01/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "04/01/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0024",
+    "nombre": "Dije Inca",
+    "tipo": "Dije",
+    "material": "Oro blanco",
+    "gema": "—",
+    "origen": "Cusco",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Andean Silver Perú",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "5.1",
+    "fechaFab": "2026-12-15",
+    "fechaReg": "15/12/2026",
+    "estado": "Pendiente",
+    "historial": [
+      {
+        "fecha": "15/12/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Andean Silver Perú"
+      },
+      {
+        "fecha": "15/12/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0025",
+    "nombre": "Anillo Apu",
+    "tipo": "Anillo",
+    "material": "Oro 14k",
+    "gema": "—",
+    "origen": "La Libertad",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Andean Silver Perú",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "19.7",
+    "fechaFab": "2026-01-17",
+    "fechaReg": "17/01/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "17/01/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Andean Silver Perú"
+      },
+      {
+        "fecha": "17/01/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "17/01/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0026",
+    "nombre": "Collar Llaqta",
+    "tipo": "Collar",
+    "material": "Oro 14k",
+    "gema": "—",
+    "origen": "Lima",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Andes Gold Perú S.A.C.",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "7.4",
+    "fechaFab": "2026-12-21",
+    "fechaReg": "21/12/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "21/12/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Andes Gold Perú S.A.C."
+      },
+      {
+        "fecha": "21/12/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "21/12/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0027",
+    "nombre": "Anillo Apu",
+    "tipo": "Anillo",
+    "material": "Plata 950",
+    "gema": "—",
+    "origen": "Áncash",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Minera Aurífera Andina S.A.C.",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "23.1",
+    "fechaFab": "2026-01-04",
+    "fechaReg": "04/01/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "04/01/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Minera Aurífera Andina S.A.C."
+      },
+      {
+        "fecha": "04/01/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "04/01/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0028",
+    "nombre": "Aretes Inca",
+    "tipo": "Aretes",
+    "material": "Oro 14k",
+    "gema": "—",
+    "origen": "Arequipa",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Miski Gold Export",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "14.4",
+    "fechaFab": "2026-10-06",
+    "fechaReg": "06/10/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "06/10/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Miski Gold Export"
+      },
+      {
+        "fecha": "06/10/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "06/10/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0029",
+    "nombre": "Collar Llaqta",
+    "tipo": "Collar",
+    "material": "Plata 950",
+    "gema": "—",
+    "origen": "Madre de Dios",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Silver Perú Trading",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "18.1",
+    "fechaFab": "2026-10-26",
+    "fechaReg": "26/10/2026",
+    "estado": "En revisión",
+    "historial": [
+      {
+        "fecha": "26/10/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Silver Perú Trading"
+      },
+      {
+        "fecha": "26/10/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "26/10/2026",
+        "evento": "Documentación en proceso de revisión",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0030",
+    "nombre": "Aretes Andes",
+    "tipo": "Aretes",
+    "material": "Oro 14k",
+    "gema": "—",
+    "origen": "Arequipa",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Miski Gold Export",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "2.2",
+    "fechaFab": "2026-09-09",
+    "fechaReg": "09/09/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "09/09/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Miski Gold Export"
+      },
+      {
+        "fecha": "09/09/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "09/09/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0031",
+    "nombre": "Broche Sumaq",
+    "tipo": "Broche",
+    "material": "Oro blanco",
+    "gema": "—",
+    "origen": "Arequipa",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Inca Metals Perú",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "21.8",
+    "fechaFab": "2026-08-01",
+    "fechaReg": "01/08/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "01/08/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Inca Metals Perú"
+      },
+      {
+        "fecha": "01/08/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "01/08/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0032",
+    "nombre": "Pulsera Cusiy",
+    "tipo": "Pulsera",
+    "material": "Oro 18k",
+    "gema": "—",
+    "origen": "La Libertad",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Cooperativa Los Andes",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "6.8",
+    "fechaFab": "2026-04-14",
+    "fechaReg": "14/04/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "14/04/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Cooperativa Los Andes"
+      },
+      {
+        "fecha": "14/04/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "14/04/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0033",
+    "nombre": "Pulsera Inca",
+    "tipo": "Pulsera",
+    "material": "Oro 18k",
+    "gema": "—",
+    "origen": "Arequipa",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Andean Silver Perú",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "4.8",
+    "fechaFab": "2026-11-12",
+    "fechaReg": "12/11/2026",
+    "estado": "En revisión",
+    "historial": [
+      {
+        "fecha": "12/11/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Andean Silver Perú"
+      },
+      {
+        "fecha": "12/11/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "12/11/2026",
+        "evento": "Documentación en proceso de revisión",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0034",
+    "nombre": "Anillo Llaqta",
+    "tipo": "Anillo",
+    "material": "Oro 24k",
+    "gema": "—",
+    "origen": "Cusco",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Cooperativa Los Andes",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "9.2",
+    "fechaFab": "2026-04-25",
+    "fechaReg": "25/04/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "25/04/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Cooperativa Los Andes"
+      },
+      {
+        "fecha": "25/04/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "25/04/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0035",
+    "nombre": "Dije Nazca",
+    "tipo": "Dije",
+    "material": "Oro blanco",
+    "gema": "—",
+    "origen": "La Libertad",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Inca Metals Perú",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "19.9",
+    "fechaFab": "2026-07-11",
+    "fechaReg": "11/07/2026",
+    "estado": "En revisión",
+    "historial": [
+      {
+        "fecha": "11/07/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Inca Metals Perú"
+      },
+      {
+        "fecha": "11/07/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "11/07/2026",
+        "evento": "Documentación en proceso de revisión",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0036",
+    "nombre": "Pulsera Sumaq",
+    "tipo": "Pulsera",
+    "material": "Plata 925",
+    "gema": "—",
+    "origen": "Madre de Dios",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Cooperativa Minera San José",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "12",
+    "fechaFab": "2026-08-03",
+    "fechaReg": "03/08/2026",
+    "estado": "En revisión",
+    "historial": [
+      {
+        "fecha": "03/08/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Cooperativa Minera San José"
+      },
+      {
+        "fecha": "03/08/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "03/08/2026",
+        "evento": "Documentación en proceso de revisión",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0037",
+    "nombre": "Aretes Nazca",
+    "tipo": "Aretes",
+    "material": "Oro 18k",
+    "gema": "—",
+    "origen": "Cusco",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Cooperativa Los Andes",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "16.5",
+    "fechaFab": "2026-01-03",
+    "fechaReg": "03/01/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "03/01/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Cooperativa Los Andes"
+      },
+      {
+        "fecha": "03/01/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "03/01/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0038",
+    "nombre": "Collar Andes",
+    "tipo": "Collar",
+    "material": "Plata 950",
+    "gema": "—",
+    "origen": "Lima",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Cooperativa Los Andes",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "24.5",
+    "fechaFab": "2026-08-14",
+    "fechaReg": "14/08/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "14/08/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Cooperativa Los Andes"
+      },
+      {
+        "fecha": "14/08/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "14/08/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0039",
+    "nombre": "Anillo Apu",
+    "tipo": "Anillo",
+    "material": "Oro 24k",
+    "gema": "—",
+    "origen": "Madre de Dios",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Consorcio Qori Wasi",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "10",
+    "fechaFab": "2026-05-04",
+    "fechaReg": "04/05/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "04/05/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Consorcio Qori Wasi"
+      },
+      {
+        "fecha": "04/05/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "04/05/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0040",
+    "nombre": "Broche Cóndor",
+    "tipo": "Broche",
+    "material": "Oro 18k",
+    "gema": "—",
+    "origen": "Cajamarca",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Inca Metals Perú",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "10.1",
+    "fechaFab": "2026-11-01",
+    "fechaReg": "01/11/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "01/11/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Inca Metals Perú"
+      },
+      {
+        "fecha": "01/11/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "01/11/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0041",
+    "nombre": "Collar Sumaq",
+    "tipo": "Collar",
+    "material": "Plata 950",
+    "gema": "—",
+    "origen": "La Libertad",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Kuntur Mining S.A.C.",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "4.9",
+    "fechaFab": "2026-10-26",
+    "fechaReg": "26/10/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "26/10/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Kuntur Mining S.A.C."
+      },
+      {
+        "fecha": "26/10/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "26/10/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0042",
+    "nombre": "Pulsera Llaqta",
+    "tipo": "Pulsera",
+    "material": "Oro blanco",
+    "gema": "—",
+    "origen": "Arequipa",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Andean Silver Perú",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "16.5",
+    "fechaFab": "2026-05-23",
+    "fechaReg": "23/05/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "23/05/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Andean Silver Perú"
+      },
+      {
+        "fecha": "23/05/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "23/05/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0043",
+    "nombre": "Dije Wiracocha",
+    "tipo": "Dije",
+    "material": "Plata 925",
+    "gema": "—",
+    "origen": "Madre de Dios",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Minera Aurífera Andina S.A.C.",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "19.2",
+    "fechaFab": "2026-01-02",
+    "fechaReg": "02/01/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "02/01/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Minera Aurífera Andina S.A.C."
+      },
+      {
+        "fecha": "02/01/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "02/01/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0044",
+    "nombre": "Aretes Qori",
+    "tipo": "Aretes",
+    "material": "Plata 925",
+    "gema": "—",
+    "origen": "La Libertad",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Cooperativa Los Andes",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "19.3",
+    "fechaFab": "2026-05-16",
+    "fechaReg": "16/05/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "16/05/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Cooperativa Los Andes"
+      },
+      {
+        "fecha": "16/05/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "16/05/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0045",
+    "nombre": "Dije Sumaq",
+    "tipo": "Dije",
+    "material": "Plata 950",
+    "gema": "—",
+    "origen": "Lima",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Cooperativa Los Andes",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "23.1",
+    "fechaFab": "2026-06-26",
+    "fechaReg": "26/06/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "26/06/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Cooperativa Los Andes"
+      },
+      {
+        "fecha": "26/06/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "26/06/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0046",
+    "nombre": "Pulsera Misti",
+    "tipo": "Pulsera",
+    "material": "Oro 14k",
+    "gema": "—",
+    "origen": "Cusco",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Plata del Sur S.A.C.",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "8.8",
+    "fechaFab": "2026-09-16",
+    "fechaReg": "16/09/2026",
+    "estado": "En revisión",
+    "historial": [
+      {
+        "fecha": "16/09/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Plata del Sur S.A.C."
+      },
+      {
+        "fecha": "16/09/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "16/09/2026",
+        "evento": "Documentación en proceso de revisión",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0047",
+    "nombre": "Anillo Misti",
+    "tipo": "Anillo",
+    "material": "Oro 18k",
+    "gema": "—",
+    "origen": "Áncash",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Inca Metals Perú",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "24.3",
+    "fechaFab": "2026-05-15",
+    "fechaReg": "15/05/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "15/05/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Inca Metals Perú"
+      },
+      {
+        "fecha": "15/05/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "15/05/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0048",
+    "nombre": "Broche Nazca",
+    "tipo": "Broche",
+    "material": "Oro 24k",
+    "gema": "—",
+    "origen": "Madre de Dios",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Qori Minerals S.A.C.",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "23.7",
+    "fechaFab": "2026-11-24",
+    "fechaReg": "24/11/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "24/11/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Qori Minerals S.A.C."
+      },
+      {
+        "fecha": "24/11/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "24/11/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0049",
+    "nombre": "Aretes Inca",
+    "tipo": "Aretes",
+    "material": "Oro blanco",
+    "gema": "—",
+    "origen": "Cusco",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Minera Aurífera Andina S.A.C.",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "10.5",
+    "fechaFab": "2026-04-04",
+    "fechaReg": "04/04/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "04/04/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Minera Aurífera Andina S.A.C."
+      },
+      {
+        "fecha": "04/04/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "04/04/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0050",
+    "nombre": "Broche Sol",
+    "tipo": "Broche",
+    "material": "Plata 925",
+    "gema": "—",
+    "origen": "Áncash",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Minera Apumayo",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "5.6",
+    "fechaFab": "2026-02-17",
+    "fechaReg": "17/02/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "17/02/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Minera Apumayo"
+      },
+      {
+        "fecha": "17/02/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "17/02/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0051",
+    "nombre": "Aretes Sol",
+    "tipo": "Aretes",
+    "material": "Oro 14k",
+    "gema": "—",
+    "origen": "Cajamarca",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Corporación Minera Inti",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "5.6",
+    "fechaFab": "2026-02-28",
+    "fechaReg": "28/02/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "28/02/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Corporación Minera Inti"
+      },
+      {
+        "fecha": "28/02/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "28/02/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0052",
+    "nombre": "Broche Wiracocha",
+    "tipo": "Broche",
+    "material": "Oro 14k",
+    "gema": "—",
+    "origen": "Puno",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Corporación Minera Inti",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "13.5",
+    "fechaFab": "2026-01-21",
+    "fechaReg": "21/01/2026",
+    "estado": "Pendiente",
+    "historial": [
+      {
+        "fecha": "21/01/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Corporación Minera Inti"
+      },
+      {
+        "fecha": "21/01/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0053",
+    "nombre": "Aretes Apu",
+    "tipo": "Aretes",
+    "material": "Plata 950",
+    "gema": "—",
+    "origen": "Arequipa",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Andes Gold Perú S.A.C.",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "11.5",
+    "fechaFab": "2026-02-18",
+    "fechaReg": "18/02/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "18/02/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Andes Gold Perú S.A.C."
+      },
+      {
+        "fecha": "18/02/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "18/02/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0054",
+    "nombre": "Broche Andes",
+    "tipo": "Broche",
+    "material": "Oro blanco",
+    "gema": "—",
+    "origen": "Cajamarca",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Inca Metals Perú",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "15.7",
+    "fechaFab": "2026-02-09",
+    "fechaReg": "09/02/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "09/02/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Inca Metals Perú"
+      },
+      {
+        "fecha": "09/02/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "09/02/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0055",
+    "nombre": "Collar Inca",
+    "tipo": "Collar",
+    "material": "Oro blanco",
+    "gema": "—",
+    "origen": "Madre de Dios",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Andes Gold Perú S.A.C.",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "17",
+    "fechaFab": "2026-08-18",
+    "fechaReg": "18/08/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "18/08/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Andes Gold Perú S.A.C."
+      },
+      {
+        "fecha": "18/08/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "18/08/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0056",
+    "nombre": "Anillo Inca",
+    "tipo": "Anillo",
+    "material": "Oro 14k",
+    "gema": "—",
+    "origen": "Lima",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Andes Gold Perú S.A.C.",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "4.9",
+    "fechaFab": "2026-04-24",
+    "fechaReg": "24/04/2026",
+    "estado": "En revisión",
+    "historial": [
+      {
+        "fecha": "24/04/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Andes Gold Perú S.A.C."
+      },
+      {
+        "fecha": "24/04/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "24/04/2026",
+        "evento": "Documentación en proceso de revisión",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0057",
+    "nombre": "Collar Cusiy",
+    "tipo": "Collar",
+    "material": "Plata 925",
+    "gema": "—",
+    "origen": "Áncash",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Plata del Sur S.A.C.",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "8.5",
+    "fechaFab": "2026-07-07",
+    "fechaReg": "07/07/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "07/07/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Plata del Sur S.A.C."
+      },
+      {
+        "fecha": "07/07/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "07/07/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0058",
+    "nombre": "Broche Andes",
+    "tipo": "Broche",
+    "material": "Oro 18k",
+    "gema": "—",
+    "origen": "Arequipa",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Miski Gold Export",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "14.6",
+    "fechaFab": "2026-07-08",
+    "fechaReg": "08/07/2026",
+    "estado": "Pendiente",
+    "historial": [
+      {
+        "fecha": "08/07/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Miski Gold Export"
+      },
+      {
+        "fecha": "08/07/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0059",
+    "nombre": "Collar Inca",
+    "tipo": "Collar",
+    "material": "Oro 18k",
+    "gema": "—",
+    "origen": "Cusco",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Cooperativa Los Andes",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "14.8",
+    "fechaFab": "2026-11-10",
+    "fechaReg": "10/11/2026",
+    "estado": "En revisión",
+    "historial": [
+      {
+        "fecha": "10/11/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Cooperativa Los Andes"
+      },
+      {
+        "fecha": "10/11/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "10/11/2026",
+        "evento": "Documentación en proceso de revisión",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0060",
+    "nombre": "Pulsera Misti",
+    "tipo": "Pulsera",
+    "material": "Plata 925",
+    "gema": "—",
+    "origen": "Lima",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Consorcio Qori Wasi",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "22.6",
+    "fechaFab": "2026-02-26",
+    "fechaReg": "26/02/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "26/02/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Consorcio Qori Wasi"
+      },
+      {
+        "fecha": "26/02/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "26/02/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0061",
+    "nombre": "Pulsera Pachamama",
+    "tipo": "Pulsera",
+    "material": "Oro 24k",
+    "gema": "—",
+    "origen": "Cajamarca",
+    "mineria": "Artesanal certificada",
+    "proveedor": "JoyMiner Perú",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "19.3",
+    "fechaFab": "2026-09-19",
+    "fechaReg": "19/09/2026",
+    "estado": "Rechazado",
+    "historial": [
+      {
+        "fecha": "19/09/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "JoyMiner Perú"
+      },
+      {
+        "fecha": "19/09/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "19/09/2026",
+        "evento": "Documentación rechazada — requiere correcciones",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0062",
+    "nombre": "Dije Inti",
+    "tipo": "Dije",
+    "material": "Oro 24k",
+    "gema": "—",
+    "origen": "Cusco",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Qori Minerals S.A.C.",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "3.8",
+    "fechaFab": "2026-12-18",
+    "fechaReg": "18/12/2026",
+    "estado": "En revisión",
+    "historial": [
+      {
+        "fecha": "18/12/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Qori Minerals S.A.C."
+      },
+      {
+        "fecha": "18/12/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "18/12/2026",
+        "evento": "Documentación en proceso de revisión",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0063",
+    "nombre": "Broche Apu",
+    "tipo": "Broche",
+    "material": "Oro blanco",
+    "gema": "—",
+    "origen": "La Libertad",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Corporación Minera Inti",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "18.7",
+    "fechaFab": "2026-08-24",
+    "fechaReg": "24/08/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "24/08/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Corporación Minera Inti"
+      },
+      {
+        "fecha": "24/08/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "24/08/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0064",
+    "nombre": "Broche Killa",
+    "tipo": "Broche",
+    "material": "Plata 925",
+    "gema": "—",
+    "origen": "Lima",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Silver Perú Trading",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "8.7",
+    "fechaFab": "2026-09-12",
+    "fechaReg": "12/09/2026",
+    "estado": "En revisión",
+    "historial": [
+      {
+        "fecha": "12/09/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Silver Perú Trading"
+      },
+      {
+        "fecha": "12/09/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "12/09/2026",
+        "evento": "Documentación en proceso de revisión",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0065",
+    "nombre": "Dije Andes",
+    "tipo": "Dije",
+    "material": "Plata 950",
+    "gema": "—",
+    "origen": "Lima",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Cooperativa Los Andes",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "5.4",
+    "fechaFab": "2026-07-21",
+    "fechaReg": "21/07/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "21/07/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Cooperativa Los Andes"
+      },
+      {
+        "fecha": "21/07/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "21/07/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0066",
+    "nombre": "Collar Apu",
+    "tipo": "Collar",
+    "material": "Oro 14k",
+    "gema": "—",
+    "origen": "La Libertad",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Consorcio Qori Wasi",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "15.2",
+    "fechaFab": "2026-05-16",
+    "fechaReg": "16/05/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "16/05/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Consorcio Qori Wasi"
+      },
+      {
+        "fecha": "16/05/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "16/05/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0067",
+    "nombre": "Collar Cóndor",
+    "tipo": "Collar",
+    "material": "Plata 925",
+    "gema": "—",
+    "origen": "Arequipa",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Qori Minerals S.A.C.",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "13.4",
+    "fechaFab": "2026-08-16",
+    "fechaReg": "16/08/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "16/08/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Qori Minerals S.A.C."
+      },
+      {
+        "fecha": "16/08/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "16/08/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0068",
+    "nombre": "Collar Andes",
+    "tipo": "Collar",
+    "material": "Plata 950",
+    "gema": "—",
+    "origen": "Cajamarca",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Cooperativa Los Andes",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "22.7",
+    "fechaFab": "2026-08-11",
+    "fechaReg": "11/08/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "11/08/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Cooperativa Los Andes"
+      },
+      {
+        "fecha": "11/08/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "11/08/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0069",
+    "nombre": "Dije Misti",
+    "tipo": "Dije",
+    "material": "Plata 950",
+    "gema": "—",
+    "origen": "Áncash",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "JoyMiner Perú",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "12.8",
+    "fechaFab": "2026-04-14",
+    "fechaReg": "14/04/2026",
+    "estado": "En revisión",
+    "historial": [
+      {
+        "fecha": "14/04/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "JoyMiner Perú"
+      },
+      {
+        "fecha": "14/04/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "14/04/2026",
+        "evento": "Documentación en proceso de revisión",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0070",
+    "nombre": "Aretes Misti",
+    "tipo": "Aretes",
+    "material": "Oro blanco",
+    "gema": "—",
+    "origen": "Arequipa",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Cooperativa Los Andes",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "2.3",
+    "fechaFab": "2026-07-25",
+    "fechaReg": "25/07/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "25/07/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Cooperativa Los Andes"
+      },
+      {
+        "fecha": "25/07/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "25/07/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0071",
+    "nombre": "Collar Pachamama",
+    "tipo": "Collar",
+    "material": "Plata 950",
+    "gema": "—",
+    "origen": "Cusco",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Inca Metals Perú",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "5.6",
+    "fechaFab": "2026-01-27",
+    "fechaReg": "27/01/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "27/01/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Inca Metals Perú"
+      },
+      {
+        "fecha": "27/01/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "27/01/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0072",
+    "nombre": "Aretes Apu",
+    "tipo": "Aretes",
+    "material": "Plata 950",
+    "gema": "—",
+    "origen": "Cusco",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Andean Silver Perú",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "23.1",
+    "fechaFab": "2026-05-20",
+    "fechaReg": "20/05/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "20/05/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Andean Silver Perú"
+      },
+      {
+        "fecha": "20/05/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "20/05/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0073",
+    "nombre": "Anillo Inca",
+    "tipo": "Anillo",
+    "material": "Oro 18k",
+    "gema": "—",
+    "origen": "Madre de Dios",
+    "mineria": "Artesanal certificada",
+    "proveedor": "Silver Perú Trading",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "5.6",
+    "fechaFab": "2026-11-15",
+    "fechaReg": "15/11/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "15/11/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Silver Perú Trading"
+      },
+      {
+        "fecha": "15/11/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "15/11/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0074",
+    "nombre": "Pulsera Andes",
+    "tipo": "Pulsera",
+    "material": "Oro blanco",
+    "gema": "—",
+    "origen": "Lima",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Cooperativa Minera San José",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "5.6",
+    "fechaFab": "2026-02-08",
+    "fechaReg": "08/02/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "08/02/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Cooperativa Minera San José"
+      },
+      {
+        "fecha": "08/02/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "08/02/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0075",
+    "nombre": "Collar Qori",
+    "tipo": "Collar",
+    "material": "Oro 14k",
+    "gema": "—",
+    "origen": "Cusco",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Miski Gold Export",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "12",
+    "fechaFab": "2026-02-20",
+    "fechaReg": "20/02/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "20/02/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Miski Gold Export"
+      },
+      {
+        "fecha": "20/02/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "20/02/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0076",
+    "nombre": "Dije Qori",
+    "tipo": "Dije",
+    "material": "Oro blanco",
+    "gema": "—",
+    "origen": "La Libertad",
+    "mineria": "Artesanal certificada",
+    "proveedor": "JoyMiner Perú",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "20.4",
+    "fechaFab": "2026-02-23",
+    "fechaReg": "23/02/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "23/02/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "JoyMiner Perú"
+      },
+      {
+        "fecha": "23/02/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "23/02/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0077",
+    "nombre": "Aretes Apu",
+    "tipo": "Aretes",
+    "material": "Oro 14k",
+    "gema": "—",
+    "origen": "Lima",
+    "mineria": "Minería mediana formal",
+    "proveedor": "Cooperativa Minera San José",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "8.1",
+    "fechaFab": "2026-12-13",
+    "fechaReg": "13/12/2026",
+    "estado": "En revisión",
+    "historial": [
+      {
+        "fecha": "13/12/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Cooperativa Minera San José"
+      },
+      {
+        "fecha": "13/12/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "13/12/2026",
+        "evento": "Documentación en proceso de revisión",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  },
+  {
+    "serial": "JT-2026-0078",
+    "nombre": "Dije Apu",
+    "tipo": "Dije",
+    "material": "Plata 950",
+    "gema": "—",
+    "origen": "Puno",
+    "mineria": "Pequeña minería formal",
+    "proveedor": "Andes Gold Perú S.A.C.",
+    "ruc": "—",
+    "descripcion": "—",
+    "peso": "4.8",
+    "fechaFab": "2026-08-16",
+    "fechaReg": "16/08/2026",
+    "estado": "Aprobado",
+    "historial": [
+      {
+        "fecha": "16/08/2026",
+        "evento": "Joya registrada en el sistema",
+        "actor": "Andes Gold Perú S.A.C."
+      },
+      {
+        "fecha": "16/08/2026",
+        "evento": "QR generado y vinculado",
+        "actor": "Sistema JoyTrack"
+      },
+      {
+        "fecha": "16/08/2026",
+        "evento": "Certificación ESG aprobada por auditor",
+        "actor": "Auditor ESG — JoyTrack"
+      }
+    ]
+  }
+];
+
+// ═══════════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ═══════════════════════════════════════════════════════
+let joyas = JSON.parse(localStorage.getItem('joytrack_joyas') || 'null') || SEED_JOYAS.slice();
+let counter = parseInt(localStorage.getItem('joytrack_counter') || '0') || 78;
+
+function save() {
+  localStorage.setItem('joytrack_joyas', JSON.stringify(joyas));
+  localStorage.setItem('joytrack_counter', counter);
+}
+
+// ── QR PATTERN GENERATOR (deterministic visual mock) ──
+function makeQRPattern(seed) {
+  const pat = [
+    [1,1,1,1,1,1,1,0,1,0],[1,0,0,0,0,0,1,0,0,1],[1,0,1,1,1,0,1,0,1,0],
+    [1,0,1,1,1,0,1,0,0,1],[1,0,1,1,1,0,1,0,1,1],[1,0,0,0,0,0,1,0,0,0],
+    [1,1,1,1,1,1,1,0,1,0],[0,0,0,0,0,0,0,0,0,1],[1,0,1,0,1,0,1,1,1,0],
+    [0,1,0,0,1,1,0,1,0,1]
+  ];
+  let h = 0; for(let i=0;i<seed.length;i++) h = (h*31+seed.charCodeAt(i))%256;
+  return pat.map((row,r)=>row.map((v,c)=>v^((h>>(r+c)%8)&0)&1));
+}
+
+function renderQR(serial) {
+  const grid = makeQRPattern(serial);
+  const cells = grid.flat().map(v=>`<div class="qr-cell ${v?'qr-b':'qr-w'}"></div>`).join('');
+  return `<div class="qr-area"><div class="qr-grid">${cells}</div></div>`;
+}
+
+function renderQRMini(serial) {
+  const grid = makeQRPattern(serial);
+  const cells = grid.flat().map(v=>`<div class="qr-mini-cell" style="background:${v?'var(--ink)':'#fff'}"></div>`).join('');
+  return `<div class="qr-mini-wrap" onclick="verDetalle('${serial}')" title="Ver detalle de ${serial}">
+    <div class="qr-mini">${cells}</div>
+    <div class="qr-mini-label">Ver</div>
+  </div>`;
+}
+
+// ── NAV ─────────────────────────────────────────────────
+function goTo(page) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('p-'+page).classList.add('active');
+  event.target.classList.add('active');
+  if(page==='dashboard') renderDashboard();
+  if(page==='inventario') renderInventario();
+  if(page==='auditor') renderAuditor();
+  document.getElementById('globalAlert').className='alert';
+}
+
+// ── HELPERS ─────────────────────────────────────────────
+function badgeHTML(status) {
+  const map = {
+    'Pendiente':'b-pending','En revisión':'b-review',
+    'Aprobado':'b-approved','Rechazado':'b-rejected'
+  };
+  return `<span class="badge ${map[status]||'b-pending'}">${status}</span>`;
+}
+
+function showAlert(id, msg, type='success') {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = `alert alert-${type} show`;
+  if(type==='success') setTimeout(()=>el.className='alert',3500);
+}
+
+function genSerial() {
+  counter++;
+  return `JT-2026-${String(counter).padStart(4,'0')}`;
+}
+
+// ── REGISTRO ─────────────────────────────────────────────
+function registrarJoya() {
+  const v = id => document.getElementById(id).value.trim();
+  const nombre=v('r_nombre'),tipo=v('r_tipo'),material=v('r_material'),
+        origen=v('r_origen'),mineria=v('r_mineria'),proveedor=v('r_proveedor');
+  if(!nombre||!tipo||!material||!origen||!mineria||!proveedor) {
+    showAlert('regAlert','Por favor completa todos los campos obligatorios (*)','error');
+    return;
+  }
+  const joya = {
+    serial: genSerial(),
+    nombre, tipo, material,
+    gema: v('r_gema') || '—',
+    origen, mineria, proveedor,
+    ruc: v('r_ruc') || '—',
+    descripcion: v('r_desc') || '—',
+    peso: v('r_peso') || '—',
+    fechaFab: v('r_fecha') || new Date().toISOString().split('T')[0],
+    fechaReg: new Date().toLocaleDateString('es-PE'),
+    estado: 'Pendiente',
+    historial: [
+      { fecha: new Date().toLocaleDateString('es-PE'), evento: 'Joya registrada en el sistema', actor: proveedor },
+      { fecha: new Date().toLocaleDateString('es-PE'), evento: 'QR generado y vinculado', actor: 'Sistema JoyTrack' },
+    ]
+  };
+  joyas.unshift(joya);
+  save();
+  showAlert('regAlert',`Joya registrada exitosamente. N° de serie: ${joya.serial}`,'success');
+  limpiarForm();
+  renderDashboard();
+}
+
+function limpiarForm() {
+  ['r_nombre','r_tipo','r_material','r_gema','r_origen','r_mineria',
+   'r_proveedor','r_ruc','r_desc','r_peso','r_fecha'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value='';
+  });
+}
+
+// ── DASHBOARD ────────────────────────────────────────────
+function renderDashboard() {
+  const total=joyas.length;
+  const aprobadas=joyas.filter(j=>j.estado==='Aprobado').length;
+  const pendientes=joyas.filter(j=>j.estado==='Pendiente').length;
+  const rechazadas=joyas.filter(j=>j.estado==='Rechazado').length;
+  document.getElementById('statsGrid').innerHTML=`
+    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-lbl">Joyas registradas</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--green)">${aprobadas}</div><div class="stat-lbl">Certificadas ESG</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--amber)">${pendientes}</div><div class="stat-lbl">Pendientes</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--wine)">${rechazadas}</div><div class="stat-lbl">Rechazadas</div></div>
+  `;
+  const tbody=document.getElementById('dashTable');
+  if(!joyas.length){
+    tbody.innerHTML='<tr><td colspan="7" class="no-data">Sin registros aún — registra tu primera joya</td></tr>';
+    return;
+  }
+  tbody.innerHTML=joyas.slice(0,8).map(j=>`
+    <tr>
+      <td style="font-family:monospace;color:var(--gold-dk);font-size:11px;">${j.serial}</td>
+      <td>${j.nombre}</td><td>${j.material}</td><td>${j.origen}</td>
+      <td>${j.proveedor}</td><td>${badgeHTML(j.estado)}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="verDetalle('${j.serial}')">Ver</button></td>
+    </tr>`).join('');
+}
+
+// ── INVENTARIO ───────────────────────────────────────────
+function renderInventario(filtro='', estadoFiltro='') {
+  const tbody=document.getElementById('invTable');
+  let lista=joyas.filter(j=>{
+    const q=filtro.toLowerCase();
+    const match = !q||(j.nombre+j.serial+j.material+j.origen+j.proveedor).toLowerCase().includes(q);
+    const estat = !estadoFiltro||j.estado===estadoFiltro;
+    return match&&estat;
+  });
+  if(!lista.length){
+    tbody.innerHTML='<tr><td colspan="11" class="no-data">No se encontraron joyas</td></tr>';
+    return;
+  }
+  tbody.innerHTML=lista.map(j=>`
+    <tr>
+      <td style="font-family:monospace;color:var(--gold-dk);font-size:11px;">${j.serial}</td>
+      <td>${j.nombre}</td><td>${j.tipo}</td><td>${j.material}</td>
+      <td>${j.peso!=='—'?j.peso+' g':j.peso}</td>
+      <td>${j.origen}</td>
+      <td><span class="badge" style="background:var(--slate-bg);color:var(--slate);">${j.mineria}</span></td>
+      <td>${j.proveedor}</td>
+      <td>${j.fechaReg}</td>
+      <td>${badgeHTML(j.estado)}</td>
+      <td>${renderQRMini(j.serial)}</td>
+    </tr>`).join('');
+}
+
+function filtrarInventario() {
+  renderInventario(
+    document.getElementById('searchInput').value,
+    document.getElementById('filterStatus').value
+  );
+}
+
+function eliminarJoya(serial) {
+  if(!confirm(`¿Eliminar la joya ${serial}?`)) return;
+  joyas=joyas.filter(j=>j.serial!==serial);
+  save(); renderInventario(); renderDashboard();
+}
+
+// ── VERIFICAR / VISTA PÚBLICA ────────────────────────────
+function buscarJoya() {
+  const q=document.getElementById('qrSearch').value.trim().toUpperCase();
+  const joya=joyas.find(j=>j.serial===q);
+  const div=document.getElementById('joyadetalle');
+  if(!joya){ div.style.display='none'; showAlert('globalAlert',`No se encontró ninguna joya con el N° de serie "${q}"`,'error'); return; }
+  document.getElementById('globalAlert').className='alert';
+  const esgBadge = joya.estado==='Aprobado'
+    ? `<span class="badge b-approved" style="font-size:12px;padding:5px 14px;">Certificada ESG</span>`
+    : `<span class="badge b-pending" style="font-size:12px;padding:5px 14px;">En proceso de certificación</span>`;
+  div.style.display='block';
+  div.innerHTML=`
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--gold-dk);margin-bottom:6px;">${joya.nombre}</div>
+          <div style="font-size:12px;color:var(--ink-soft);font-family:monospace;">${joya.serial}</div>
+          <div style="margin-top:10px;">${esgBadge}</div>
+        </div>
+        <div style="text-align:center;">
+          ${renderQR(joya.serial)}
+          <div style="font-size:10px;color:var(--ink-soft);">Código QR de trazabilidad</div>
+        </div>
+      </div>
+
+      <div class="section-hdr">Información de la pieza</div>
+      <div class="form-grid">
+        ${[['Tipo',joya.tipo],['Material',joya.material],['Gema / Piedra',joya.gema],
+           ['Peso',joya.peso!=='—'?joya.peso+' g':joya.peso],['Fecha fabricación',joya.fechaFab],
+           ['Descripción',joya.descripcion]].map(([k,v])=>`
+          <div><div style="font-size:11px;color:var(--ink-soft);">${k}</div>
+          <div style="font-size:13px;margin-top:3px;">${v}</div></div>`).join('')}
+      </div>
+
+      <div class="section-hdr">Cadena de origen</div>
+      <div class="form-grid">
+        ${[['Región de origen',joya.origen],['Tipo de minería',joya.mineria],
+           ['Proveedor / Artesano',joya.proveedor],['RUC',joya.ruc]].map(([k,v])=>`
+          <div><div style="font-size:11px;color:var(--ink-soft);">${k}</div>
+          <div style="font-size:13px;margin-top:3px;">${v}</div></div>`).join('')}
+      </div>
+
+      <div class="section-hdr">Historial de trazabilidad</div>
+      <div class="timeline">
+        ${joya.historial.map((h,i)=>`
+          <div class="tl-item">
+            <div class="tl-dot ${i===joya.historial.length-1?'filled':''}"></div>
+            <div class="tl-label">${h.fecha} · ${h.actor}</div>
+            <div class="tl-value">${h.evento}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+// ── AUDITOR ──────────────────────────────────────────────
+function renderAuditor() {
+  const tbody=document.getElementById('audTable');
+  const lista=joyas.filter(j=>j.estado!=='Aprobado');
+  if(!lista.length){
+    tbody.innerHTML='<tr><td colspan="7" class="no-data">Todas las joyas están certificadas</td></tr>';
+    return;
+  }
+  tbody.innerHTML=lista.map(j=>`
+    <tr>
+      <td style="font-family:monospace;color:var(--gold-dk);font-size:11px;">${j.serial}</td>
+      <td>${j.nombre}</td><td>${j.proveedor}</td><td>${j.origen}</td>
+      <td>${j.mineria}</td><td>${badgeHTML(j.estado)}</td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-sm" style="background:var(--green);color:#fff;" onclick="cambiarEstado('${j.serial}','Aprobado')">Aprobar</button>
+        <button class="btn btn-sm" style="background:var(--amber);color:#fff;" onclick="cambiarEstado('${j.serial}','En revisión')">Revisar</button>
+        <button class="btn btn-danger btn-sm" onclick="cambiarEstado('${j.serial}','Rechazado')">Rechazar</button>
+      </td>
+    </tr>`).join('');
+}
+
+function cambiarEstado(serial, nuevoEstado) {
+  const joya=joyas.find(j=>j.serial===serial);
+  if(!joya) return;
+  joya.estado=nuevoEstado;
+  const msgs={
+    'Aprobado':'Certificación ESG aprobada por auditor',
+    'En revisión':'Documentación en proceso de revisión',
+    'Rechazado':'Documentación rechazada — requiere correcciones'
+  };
+  joya.historial.push({
+    fecha: new Date().toLocaleDateString('es-PE'),
+    evento: msgs[nuevoEstado],
+    actor: 'Auditor ESG — JoyTrack'
+  });
+  save(); renderAuditor(); renderDashboard();
+  showAlert('globalAlert',`Estado de ${serial} actualizado a: ${nuevoEstado}`,'success');
+}
+
+// ── MODAL DETALLE ────────────────────────────────────────
+function verDetalle(serial) {
+  const j=joyas.find(x=>x.serial===serial);
+  if(!j) return;
+  document.getElementById('modalTitle').textContent=`${j.nombre} · ${j.serial}`;
+  document.getElementById('modalBody').innerHTML=`
+    <div style="text-align:center;margin-bottom:16px;">
+      ${renderQR(j.serial)}
+      <div style="font-size:10px;color:var(--ink-soft);">Código QR único</div>
+    </div>
+    ${[['Estado ESG',badgeHTML(j.estado)],['Tipo',j.tipo],['Material',j.material],
+       ['Gema',j.gema],['Región',j.origen],['Minería',j.mineria],
+       ['Proveedor',j.proveedor],['RUC',j.ruc],['Peso',j.peso],
+       ['Fecha fabricación',j.fechaFab],['Fecha registro',j.fechaReg],
+       ['Descripción',j.descripcion]].map(([k,v])=>`
+      <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0;font-size:13px;">
+        <span style="color:var(--ink-soft);">${k}</span><span>${v}</span>
+      </div>`).join('')}
+    <div class="section-hdr" style="margin-top:16px;">Historial</div>
+    <div class="timeline">
+      ${j.historial.map((h,i)=>`
+        <div class="tl-item">
+          <div class="tl-dot ${i===j.historial.length-1?'filled':''}"></div>
+          <div class="tl-label">${h.fecha} · ${h.actor}</div>
+          <div class="tl-value">${h.evento}</div>
+        </div>`).join('')}
+    </div>
+    <div style="margin-top:18px;text-align:right;">
+      <button class="btn btn-danger btn-sm" onclick="eliminarJoya('${j.serial}');closeModalBtn();">Eliminar joya</button>
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function closeModal(e) { if(e.target.id==='modalOverlay') closeModalBtn(); }
+function closeModalBtn() { document.getElementById('modalOverlay').classList.remove('show'); }
+
+// ── INIT ─────────────────────────────────────────────────
+document.getElementById('r_fecha').value = new Date().toISOString().split('T')[0];
+renderDashboard();
+</script>
+</body>
+</html>
